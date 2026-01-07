@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { Button } from '@/components/ui/button';
@@ -149,6 +149,23 @@ const Index = () => {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.innerHTML = `
+      window.yaContextCb.push(() => {
+        Ya.Context.AdvManager.render({
+          "blockId": "R-A-18379173-1",
+          "renderTo": "yandex_rtb_R-A-18379173-1"
+        })
+      })
+    `;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
@@ -308,6 +325,10 @@ const Index = () => {
           <Icon name="Download" size={24} className="mr-3" />
           {isCreating ? 'Создание архива...' : 'Создать и скачать ZIP'}
         </Button>
+
+        <div className="flex justify-center">
+          <div id="yandex_rtb_R-A-18379173-1"></div>
+        </div>
       </div>
     </div>
   );
