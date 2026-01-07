@@ -156,7 +156,7 @@ const Index = () => {
         <div className="text-center space-y-2 pt-8">
           <div className="flex items-center justify-center gap-3 mb-2">
             <Icon name="Archive" size={40} className="text-primary" />
-            <h1 className="text-4xl font-bold text-slate-800">ZIP Архиватор</h1>
+            <h1 className="text-4xl font-bold text-slate-800">Архивировать папку</h1>
           </div>
           <p className="text-slate-600 text-lg">
             Создавайте архивы быстро и легко прямо в браузере
