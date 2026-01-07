@@ -15,6 +15,7 @@ interface FileItem {
   file: File;
   path: string;
   selected: boolean;
+  isDirectory?: boolean;
 }
 
 const Index = () => {
@@ -27,19 +28,59 @@ const Index = () => {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(e.target.files || []);
+    
+    const folders = new Set<string>();
+    selectedFiles.forEach((file) => {
+      const relativePath = file.webkitRelativePath || file.name;
+      const parts = relativePath.split('/');
+      
+      for (let i = 0; i < parts.length - 1; i++) {
+        const folderPath = parts.slice(0, i + 1).join('/');
+        folders.add(folderPath);
+      }
+    });
+
+    const folderItems: FileItem[] = Array.from(folders).map((folderPath) => ({
+      file: new File([], folderPath),
+      path: folderPath,
+      selected: true,
+      isDirectory: true,
+    }));
+
     const fileItems: FileItem[] = selectedFiles.map((file) => ({
       file,
       path: file.webkitRelativePath || file.name,
       selected: true,
+      isDirectory: false,
     }));
-    setFiles(fileItems);
-    toast.success(`Загружено файлов: ${fileItems.length}`);
+
+    const allItems = [...folderItems, ...fileItems].sort((a, b) => {
+      if (a.isDirectory && !b.isDirectory) return -1;
+      if (!a.isDirectory && b.isDirectory) return 1;
+      return a.path.localeCompare(b.path);
+    });
+
+    setFiles(allItems);
+    toast.success(`Загружено: ${folders.size} папок и ${fileItems.length} файлов`);
   };
 
   const toggleFileSelection = (index: number) => {
-    setFiles((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, selected: !item.selected } : item))
-    );
+    setFiles((prev) => {
+      const item = prev[index];
+      const newSelected = !item.selected;
+
+      return prev.map((fileItem, i) => {
+        if (i === index) {
+          return { ...fileItem, selected: newSelected };
+        }
+        
+        if (item.isDirectory && fileItem.path.startsWith(item.path + '/')) {
+          return { ...fileItem, selected: newSelected };
+        }
+
+        return fileItem;
+      });
+    });
   };
 
   const handleCreateArchive = async () => {
@@ -66,7 +107,9 @@ const Index = () => {
       };
 
       selectedFiles.forEach((fileItem) => {
-        zip.file(fileItem.path, fileItem.file);
+        if (!fileItem.isDirectory) {
+          zip.file(fileItem.path, fileItem.file);
+        }
       });
 
       const blob = await zip.generateAsync(
@@ -135,6 +178,7 @@ const Index = () => {
               ref={fileInputRef}
               type="file"
               multiple
+              webkitdirectory=""
               onChange={handleFileSelect}
               className="hidden"
             />
@@ -144,7 +188,7 @@ const Index = () => {
               className="w-full h-24 text-lg hover:scale-105 transition-transform"
             >
               <Icon name="FolderOpen" size={28} className="mr-3" />
-              Выбрать файлы и папки
+              Выбрать папку
             </Button>
 
             {files.length > 0 && (
@@ -161,22 +205,36 @@ const Index = () => {
                     )}
                   </span>
                 </div>
-                {files.map((fileItem, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center space-x-3 p-2 hover:bg-white rounded transition-colors"
-                  >
-                    <Checkbox
-                      checked={fileItem.selected}
-                      onCheckedChange={() => toggleFileSelection(index)}
-                    />
-                    <Icon name="File" size={18} className="text-slate-400" />
-                    <span className="text-sm flex-1 truncate">{fileItem.path}</span>
-                    <span className="text-xs text-slate-500">
-                      {formatFileSize(fileItem.file.size)}
-                    </span>
-                  </div>
-                ))}
+                {files.map((fileItem, index) => {
+                  const depth = fileItem.path.split('/').length - 1;
+                  const isFolder = fileItem.isDirectory;
+                  
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center space-x-3 p-2 hover:bg-white rounded transition-colors"
+                      style={{ paddingLeft: `${depth * 16 + 8}px` }}
+                    >
+                      <Checkbox
+                        checked={fileItem.selected}
+                        onCheckedChange={() => toggleFileSelection(index)}
+                      />
+                      <Icon
+                        name={isFolder ? 'Folder' : 'File'}
+                        size={18}
+                        className={isFolder ? 'text-amber-500' : 'text-slate-400'}
+                      />
+                      <span className={`text-sm flex-1 truncate ${isFolder ? 'font-medium' : ''}`}>
+                        {fileItem.path.split('/').pop()}
+                      </span>
+                      {!isFolder && (
+                        <span className="text-xs text-slate-500">
+                          {formatFileSize(fileItem.file.size)}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </CardContent>
