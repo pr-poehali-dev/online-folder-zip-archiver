@@ -180,6 +180,10 @@ const Index = () => {
           </p>
         </div>
 
+        <div className="flex justify-center">
+          <div id="yandex_rtb_R-A-18379173-1"></div>
+        </div>
+
         <Card className="shadow-lg border-0 animate-fade-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -325,10 +329,6 @@ const Index = () => {
           <Icon name="Download" size={24} className="mr-3" />
           {isCreating ? 'Создание архива...' : 'Создать и скачать ZIP'}
         </Button>
-
-        <div className="flex justify-center">
-          <div id="yandex_rtb_R-A-18379173-1"></div>
-        </div>
       </div>
     </div>
   );
