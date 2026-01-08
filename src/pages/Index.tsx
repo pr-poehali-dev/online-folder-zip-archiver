@@ -329,6 +329,17 @@ const Index = () => {
           <Icon name="Download" size={24} className="mr-3" />
           {isCreating ? 'Создание архива...' : 'Создать и скачать ZIP'}
         </Button>
+
+        <Card className="bg-muted/50 border-muted">
+          <CardHeader>
+            <CardTitle className="text-lg">Как заархивировать папку?</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <p>1. Нажмите <strong>Выбрать папку</strong>, зайдите в нужную папку и дайте разрешение на доступ к ней</p>
+            <p>2. Выберите нужную степень сжатия</p>
+            <p>3. Нажмите <strong>Создать и скачать ZIP</strong></p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
